@@ -17,7 +17,6 @@
 package com.jt.tool.pdf;
 
 import com.google.common.base.Splitter;
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitWidthDestination;
@@ -25,33 +24,27 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocume
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.util.PDFTextStripper;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
- * This is an example on how to add bookmarks to a PDF document.  It simply
- * adds 1 bookmark for every page.
- * Usage: java org.apache.pdfbox.examples.pdmodel.CreateBookmarks &lt;input-pdf&gt; &lt;output-pdf&gt;
+ * This is an example on how to add bookmarks to a PDF document.
+ * 1. found your pdf title, and create regex pattern
+ * 2. input filePath and title regex pattern and run
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.2 $
+ * Attention!!! the process would remove the old bookmarks
  */
 public class CreateBookmarks {
-    private CreateBookmarks() {
-        //utility class
-    }
 
     static Splitter on = Splitter.on("\r\n").omitEmptyStrings();
 
 
     /**
      * This will print the documents data.
-     *
-     * @param args The command line arguments.
-     * @exception Exception If there is an error parsing the document.
      */
     public static void main(String[] args) throws Exception {
+        //file path
         String fileName = "d:/pdf/go.pdf";
+        //title regext
         String regex = "^\\d{1,2}\\.\\d{1,2}\\.\\s.*+";
         createBookmark(fileName, regex);
     }
@@ -71,7 +64,7 @@ public class CreateBookmarks {
             outline.appendChild(pagesOutline);
             List pages = document.getDocumentCatalog().getAllPages();
             for (int i = 0; i < pages.size(); i++) {
-                String pageText = getPageText(document, i+1, 0);
+                String pageText = getPageText(document, i + 1, 0);
                 String[] strings = matchTitle(pageText, reg);
                 if (makeBookmark(strings)) {
                     PDPage page = (PDPage) pages.get(i);
@@ -83,8 +76,6 @@ public class CreateBookmarks {
                     pagesOutline.appendChild(bookmark);
                     System.out.println("add " + strings[0]);
                 }
-                continue;
-
             }
             pagesOutline.openNode();
             outline.openNode();
@@ -96,6 +87,9 @@ public class CreateBookmarks {
         }
     }
 
+    /**
+     * parse text
+     */
     public static String getPageText(PDDocument document, int start, int offset) throws Exception {
         PDFTextStripper stripper = new PDFTextStripper();
         stripper.setStartPage(start);
@@ -103,6 +97,9 @@ public class CreateBookmarks {
         return stripper.getText(document);
     }
 
+    /**
+     * match line by line
+     */
     public static String[] matchTitle(String text, String regex) {
         Iterable<String> split = on.split(text);
         final String[] s = {null};
@@ -114,6 +111,9 @@ public class CreateBookmarks {
         return s;
     }
 
+    /**
+     * make bookmark or not
+     */
     public static boolean makeBookmark(String[] str) {
         if (str[0] != null) {
             return true;
