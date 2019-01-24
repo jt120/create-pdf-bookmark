@@ -22,8 +22,10 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitWidthDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripper;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,16 +45,17 @@ public class CreateBookmarks {
      */
     public static void main(String[] args) throws Exception {
         //file path
-        String fileName = "d:/pdf/go.pdf";
+        String fileName = "e:/test/opencv.pdf";
         //title regext
-        String regex = "^\\d{1,2}\\.\\d{1,2}\\.\\s.*+";
-        createBookmark(fileName, regex);
+//        String regex = "^\\d{1,2}\\.\\d{1,2}\\.\\s.*+";
+        String regex = "^\\d{1,2}\\.\\d{1,2}\\s.*+";
+        createBookmark(fileName, "e:/test/opencv2.pdf", regex);
     }
 
-    public static void createBookmark(String args, String reg) throws Exception {
+    public static void createBookmark(String srcFile, String targetFile, String reg) throws Exception {
         PDDocument document = null;
         try {
-            document = PDDocument.load(args);
+            document = PDDocument.load(new File(srcFile));
             if (document.isEncrypted()) {
                 System.err.println("Error: Cannot add bookmarks to encrypted document.");
                 System.exit(1);
@@ -61,9 +64,10 @@ public class CreateBookmarks {
             document.getDocumentCatalog().setDocumentOutline(outline);
             PDOutlineItem pagesOutline = new PDOutlineItem();
             pagesOutline.setTitle("All Pages");
-            outline.appendChild(pagesOutline);
-            List pages = document.getDocumentCatalog().getAllPages();
-            for (int i = 0; i < pages.size(); i++) {
+//            outline.appendChild(pagesOutline);
+            List pages = new ArrayList();
+//                    document.getDocumentCatalog().getAllPages();
+            for (int i = 12; i < pages.size(); i++) {
                 String pageText = getPageText(document, i + 1, 0);
                 String[] strings = matchTitle(pageText, reg);
                 if (makeBookmark(strings)) {
@@ -73,13 +77,13 @@ public class CreateBookmarks {
                     PDOutlineItem bookmark = new PDOutlineItem();
                     bookmark.setDestination(dest);
                     bookmark.setTitle(strings[0]);
-                    pagesOutline.appendChild(bookmark);
+//                    pagesOutline.appendChild(bookmark);
                     System.out.println("add " + strings[0]);
                 }
             }
             pagesOutline.openNode();
             outline.openNode();
-            document.save(args);
+            document.save(targetFile);
         } finally {
             if (document != null) {
                 document.close();
